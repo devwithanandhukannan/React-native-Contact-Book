@@ -9,10 +9,10 @@ export class Contact {
   name: string;
 
   @Prop({ required: true })
-  email: string;
-
-  @Prop()
   phone: string;
+
+  @Prop({ required: false })
+  email: string;
 }
 
 export const ContactSchema = SchemaFactory.createForClass(Contact);

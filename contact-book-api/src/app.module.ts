@@ -7,8 +7,16 @@ import { MongooseModule } from '@nestjs/mongoose';
 @Module({
   imports: [
     MongooseModule.forRoot(
-      'mongodb://admin:secret@127.0.0.1:27017/contact-book?authSource=admin'
-    ), // Connect to MongoDB
+      'mongodb+srv://workbridgeanandhu:Hacker123@cluster0.dseaj.mongodb.net/contact-book?retryWrites=true&w=majority&appName=Cluster0',
+      {
+        connectionFactory: (connection) => {
+          connection.on('connected', () => {
+            console.log('✅ db connected');
+          });
+          return connection;
+        },
+      }
+    ),
     ContactsModule,
   ],
   controllers: [AppController],
