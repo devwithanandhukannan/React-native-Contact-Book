@@ -11,7 +11,7 @@ async function bootstrap() {
   // Enables automatic validation (checking DTOs)
   app.useGlobalPipes(new ValidationPipe());
   
-  await app.listen(3000); // Runs on port 3000
+  await app.listen(3000, '0.0.0.0'); // Runs on port 3000
   console.log('🚀 Backend is running on http://localhost:3000');
 }
 bootstrap();
