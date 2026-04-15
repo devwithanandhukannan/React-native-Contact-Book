@@ -8,59 +8,66 @@ let memoryStorage: Record<string, string> = {};
 
 const isWeb = Platform.OS === 'web';
 
+// Check if persistent storage works once at the start
+let isStorageBroken = false;
+const checkStorage = async () => {
+  try {
+    await AsyncStorage.getItem('test');
+  } catch (e: any) {
+    if (e.message.includes('Native module is null')) {
+      isStorageBroken = true;
+      console.warn('⚠️ Native Storage is unavailable. Using robust Memory/Web fallback.');
+    }
+  }
+};
+checkStorage();
+
 export const saveContactsLocal = async (contacts: Contact[]) => {
   const data = JSON.stringify(contacts);
-  try {
-    await AsyncStorage.setItem(Config.STORAGE_KEY, data);
-  } catch (error: any) {
-    console.warn('Storage Warning (saveContactsLocal):', error.message);
-    
-    // Fallback logic
-    if (isWeb) {
-      try {
-        localStorage.setItem(Config.STORAGE_KEY, data);
-      } catch (e) {
-        console.error('Web LocalStorage Error:', e);
-      }
-    } else {
-      // In-memory fallback for native if AsyncStorage is null
-      memoryStorage[Config.STORAGE_KEY] = data;
+  
+  if (!isStorageBroken) {
+    try {
+      await AsyncStorage.setItem(Config.STORAGE_KEY, data);
+      return;
+    } catch (error: any) {
+      if (error.message.includes('Native module is null')) isStorageBroken = true;
     }
+  }
+
+  // Fallback logic (Web or Memory)
+  if (isWeb) {
+    try {
+      localStorage.setItem(Config.STORAGE_KEY, data);
+    } catch (e) {
+      console.error('Web LocalStorage Error:', e);
+    }
+  } else {
+    memoryStorage[Config.STORAGE_KEY] = data;
   }
 };
 
 export const getContactsLocal = async (): Promise<Contact[]> => {
-  try {
-    const data = await AsyncStorage.getItem(Config.STORAGE_KEY);
-    if (data) return JSON.parse(data);
-    
-    // Check web fallback
-    if (isWeb) {
-      const webData = localStorage.getItem(Config.STORAGE_KEY);
-      if (webData) return JSON.parse(webData);
+  if (!isStorageBroken) {
+    try {
+      const data = await AsyncStorage.getItem(Config.STORAGE_KEY);
+      if (data) return JSON.parse(data);
+    } catch (error: any) {
+      if (error.message.includes('Native module is null')) isStorageBroken = true;
     }
-    
-    // Check memory fallback
-    if (memoryStorage[Config.STORAGE_KEY]) {
-      return JSON.parse(memoryStorage[Config.STORAGE_KEY]);
-    }
-
-    return [];
-  } catch (error: any) {
-    console.warn('Storage Warning (getContactsLocal):', error.message);
-    
-    // Fallback on error
-    if (isWeb) {
-      const webData = localStorage.getItem(Config.STORAGE_KEY);
-      return webData ? JSON.parse(webData) : [];
-    }
-    
-    if (memoryStorage[Config.STORAGE_KEY]) {
-      return JSON.parse(memoryStorage[Config.STORAGE_KEY]);
-    }
-    
-    return [];
   }
+
+  // Check web fallback
+  if (isWeb) {
+    const webData = localStorage.getItem(Config.STORAGE_KEY);
+    if (webData) return JSON.parse(webData);
+  }
+  
+  // Check memory fallback
+  if (memoryStorage[Config.STORAGE_KEY]) {
+    return JSON.parse(memoryStorage[Config.STORAGE_KEY]);
+  }
+
+  return [];
 };
 
 export const addContactLocal = async (contact: Contact) => {
