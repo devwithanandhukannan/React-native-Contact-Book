@@ -39,7 +39,10 @@ export class ContactsController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.contactsService.remove(id);
+  async remove(@Param('id') id: string) {
+    console.log('🗑️ Deleting contact with ID:', id);
+    const result = await this.contactsService.remove(id);
+    console.log('✅ Contact deleted:', result);
+    return { success: true, data: result };
   }
 }

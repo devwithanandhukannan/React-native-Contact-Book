@@ -5,8 +5,13 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // IMPORTANT: Allows React Native to connect
-  app.enableCors();
+  // Enable CORS with explicit configuration for DELETE requests
+  app.enableCors({
+    origin: '*', // Allow all origins (or specify: ['http://localhost:3000', 'http://192.168.0.242:3000'])
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Explicitly allow DELETE
+    credentials: true,
+    allowedHeaders: 'Content-Type,Authorization',
+  });
   
   // Enables automatic validation (checking DTOs)
   app.useGlobalPipes(new ValidationPipe());
