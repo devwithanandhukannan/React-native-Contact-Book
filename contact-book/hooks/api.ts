@@ -49,12 +49,22 @@ export const updateContactApi = async (id: string, contact: Contact) => {
 
 export const deleteContactApi = async (id: string) => {
   try {
-    const response = await fetch(`${Config.API_URL}/contacts/${id}`, {
+    const url = `${Config.API_URL}/contacts/${id}`;
+    console.log('🔗 Deleting from:', url);
+    const response = await fetch(url, {
       method: 'DELETE',
     });
-    return await response.json();
+    console.log('📡 Delete response status:', response.status);
+    if (!response.ok) throw new Error(`HTTP ${response.status}: Failed to delete`);
+    
+    // Try to parse JSON response if there's content
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return await response.json();
+    }
+    return { success: true };
   } catch (error) {
-    console.error('API Error (deleteContact):', error);
+    console.error('❌ API Error (deleteContact):', error);
     throw error;
   }
 };

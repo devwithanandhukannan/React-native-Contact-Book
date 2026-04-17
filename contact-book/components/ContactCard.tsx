@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Contact } from '../hooks/api';
 
@@ -11,14 +11,23 @@ interface Props {
 
 export const ContactCard = ({ contact, onEdit, onDelete }: Props) => {
   const handleDelete = () => {
-    Alert.alert(
-      "Delete Contact",
-      `Are you sure you want to delete ${contact.name}?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Delete", style: "destructive", onPress: () => onDelete(contact._id || contact.id!) }
-      ]
-    );
+    if (Platform.OS === 'web') {
+      // Use browser confirm on web
+      const confirmed = window.confirm(`Are you sure you want to delete ${contact.name}?`);
+      if (confirmed) {
+        onDelete(contact._id || contact.id!);
+      }
+    } else {
+      // Use React Native Alert on mobile
+      Alert.alert(
+        "Delete Contact",
+        `Are you sure you want to delete ${contact.name}?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Delete", style: "destructive", onPress: () => onDelete(contact._id || contact.id!) }
+        ]
+      );
+    }
   };
 
   return (
