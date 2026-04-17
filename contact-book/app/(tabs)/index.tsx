@@ -48,6 +48,7 @@ export default function Home() {
   );
 
   const handleDelete = async (id: string) => {
+    console.log('delete');
     const updated = contacts.filter(c => c._id !== id && c.id !== id);
     setContacts(updated);
     await deleteContactLocal(id);
